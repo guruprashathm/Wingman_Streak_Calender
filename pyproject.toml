@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "streak-calendar"
+version = "1.0.0"
+description = "GitHub-style Rider Streak calendar cards from Wingman telemetry."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "Pillow>=10.0",
+    "openpyxl>=3.1",   # pandas.read_excel for .xlsx inputs
+]
+
+[project.optional-dependencies]
+qr = ["qrcode>=7.4"]   # real scannable QR; a placeholder is drawn without it
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+streak-calendar = "streak_calendar.cli:main"
+
+[tool.setuptools]
+packages = ["streak_calendar"]
+
+[tool.setuptools.package-data]
+streak_calendar = ["assets/*.png", "assets/fonts/*.ttf", "assets/fonts/*.txt"]

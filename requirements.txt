@@ -1,0 +1,6 @@
+# streak-calendar — runtime dependencies
+numpy>=1.26
+pandas>=2.0
+Pillow>=10.0
+openpyxl>=3.1      # required by pandas.read_excel for .xlsx inputs
+qrcode>=7.4        # optional: real scannable QR (a placeholder is drawn without it)

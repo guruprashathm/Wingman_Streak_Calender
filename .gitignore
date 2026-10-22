@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# streak-calendar output
+streak_cards/
+streak_demo.png
+*.png
+!streak_calendar/assets/*.png
+!docs/*.png
