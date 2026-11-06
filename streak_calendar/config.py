@@ -32,3 +32,11 @@ TH_MEDIUM_MAX = 20.0
 
 # a telemetry gap longer than this (seconds) starts a NEW trip/session
 SESSION_GAP_S = 1200
+
+# ---- live OBD history source (Wingman GraphQL API) ----
+# Override any of these via environment. The token is a short-lived JWT, so it is
+# only read from the environment (RE_API_TOKEN) and never committed.
+RE_API_URL = os.environ.get(
+    "RE_API_URL", "https://connected-api-sit.royalenfield.com/graphql")
+RE_API_TOKEN = os.environ.get("RE_API_TOKEN", "")
+RE_API_TIMEOUT_S = float(os.environ.get("RE_API_TIMEOUT_S", "30"))

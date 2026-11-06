@@ -49,6 +49,15 @@ def read_any(path):
         df = pd.read_csv(path)
     else:
         raise ValueError("Input must be .csv or .xlsx")
+    return _finalize(df)
+
+
+def _finalize(df):
+    """Shared normalisation for any source (file export or live API): parse the
+    timestamp, pin a stable ECU_TYPE + VIN per IMEI, and segment into trips.
+    Both `read_any` and the API reader (`streak_calendar.api`) funnel through
+    this so downstream code sees one identical frame shape."""
+    df = df.copy()
     df["ts"] = pd.to_datetime(df["IST_time_stamp"], errors="coerce")
     df = df.sort_values("ts")
     df["ECU_TYPE"] = df.groupby("IMEI")["ECU_TYPE"].transform(

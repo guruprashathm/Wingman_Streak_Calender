@@ -66,6 +66,35 @@ python -m streak_calendar <path.csv|xlsx> [YYYY-MM-DD]
 - The optional date is "today" — the calendar window is the 90 days ending on
   it. If omitted, the latest timestamp in the file is used.
 
+### Live OBD API (no file needed)
+
+Instead of a file, a rider's history can be pulled straight from the Wingman
+`getObdHistoryByVin` GraphQL endpoint (returns ~90 days by default):
+
+```bash
+set RE_API_TOKEN=<bearer-jwt>        # short-lived token (or pass --token)
+python -m streak_calendar --vin ME3P7B6FLN1000035 [--today YYYY-MM-DD]
+```
+
+- `--vin` is repeatable (one card per VIN); `--token` / `RE_API_TOKEN` carries the
+  bearer JWT; `--base-url` / `RE_API_URL` overrides the endpoint (default: SIT).
+- Only the fields the model needs are requested — `vehiclenumber, ts,
+  vehicleSpeed, obdDistance, ecu_type` (see `OBD_FIELDS` in
+  [`api.py`](streak_calendar/api.py)); `ts` (epoch seconds) is converted to IST.
+- Uses the standard library only — **no extra dependency** for the HTTP call.
+
+As a library:
+
+```python
+from streak_calendar import read_obd_api, rider_streak_summary, card_from_summary, identity
+
+df = read_obd_api("ME3P7B6FLN1000035", token="<jwt>")   # same frame shape as read_any
+for _, t in df.groupby("IMEI"):
+    summary = rider_streak_summary(t, today=df["ts"].max())
+    card_from_summary(summary, identity(t["VIN"].iloc[0], t["ECU_TYPE"].iloc[0]),
+                      out=f"streak_{t['VIN'].iloc[0]}.png")
+```
+
 ### As a library
 
 ```python
