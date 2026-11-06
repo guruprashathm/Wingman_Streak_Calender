@@ -15,3 +15,10 @@ streak_demo.png
 *.png
 !streak_calendar/assets/*.png
 !docs/*.png
+
+# encrypted soft-copy kit — NEVER commit these (they hold the QR secrets / raw cards)
+manifest.csv
+qr/
+riders.csv
+_softcopy_batch/
+# (softcopy-site/enc/*.bin are encrypted and ARE committed; .bin is not ignored)

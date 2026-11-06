@@ -18,6 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 qr = ["qrcode>=7.4"]   # real scannable QR; a placeholder is drawn without it
+softcopy = ["cryptography>=42", "qrcode>=7.4"]  # tools/encrypt_images.py (encrypted soft-copy QR kit)
 dev = ["pytest>=7.4"]
 
 [project.scripts]
