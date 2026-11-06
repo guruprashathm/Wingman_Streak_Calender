@@ -78,10 +78,13 @@ def main() -> None:
     ap.add_argument("--iterations", type=int, default=600_000, help="PBKDF2 iterations (default 600000)")
     ap.add_argument("--no-qr-secret", action="store_true",
                     help="Key from user ID only (weaker: anyone can brute-force guessable IDs offline)")
-    ap.add_argument("--out", type=Path, default=ROOT, help="Project root (default: this repo)")
+    ap.add_argument("--out", type=Path, default=ROOT, help="Private project root for manifest.csv + qr/ (default: this repo)")
+    ap.add_argument("--enc-dir", type=Path, default=None,
+                    help="Where to write the PUBLIC encrypted .bin files, e.g. the vault repo's enc/ "
+                         "folder (default: <out>/softcopy-site/enc). Keep manifest.csv/qr/ OUT of this dir.")
     args = ap.parse_args()
 
-    enc_dir = args.out / "softcopy-site" / "enc"
+    enc_dir = args.enc_dir if args.enc_dir else (args.out / "softcopy-site" / "enc")
     qr_dir = args.out / "qr"
     enc_dir.mkdir(parents=True, exist_ok=True)
     qr_dir.mkdir(parents=True, exist_ok=True)
@@ -130,7 +133,7 @@ def main() -> None:
         w.writeheader()
         w.writerows(merged.values())
 
-    print(f"\nEncrypted {len(rows_out)} image(s). Commit softcopy-site/enc/ and push.")
+    print(f"\nEncrypted {len(rows_out)} image(s). Commit {enc_dir} (push it to the PUBLIC vault repo).")
     print("Keep manifest.csv and qr/ private - they are git-ignored.")
 
 
