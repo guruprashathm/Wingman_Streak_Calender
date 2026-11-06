@@ -83,18 +83,67 @@ def ttext(d, x, y, s, font, fill, tr=0, anchor="l"):
     return total
 
 
-def qr(d, x, y, size, data):
+QR_DARK = (24, 24, 28)      # near-black modules
+QR_LIGHT = CREAM            # light tile behind them
+
+
+def qr(img, x, y, size, data, logo=True, panel=True):
+    """Draw a scannable QR for `data` at (x, y) with side `size` (px) onto `img`.
+
+    Design notes (all verified by decoding the output, see tests):
+      * DARK modules on a LIGHT (cream) rounded tile. Inverted QR (light-on-dark)
+        is poorly supported by real-world phone scanners, so we do NOT do that.
+      * Error-correction level H (~30% recovery) lets the Royal Enfield mark sit
+        in the centre without breaking the scan.
+      * A quiet-zone margin is baked in — required for reliable scanning.
+      * Keep `data` SHORT (use a short domain / short-link). A ~22-char URL stays
+        at QR version 3 and scans from ~120px; a ~48-char URL needs version 6 and
+        ~200px. Budget the card layout accordingly.
+
+    `data` is whatever the QR should resolve to — today a placeholder URL; swap in
+    the real download link (object-store / CDN) later with no code change here.
+    Falls back to a non-scannable placeholder if `qrcode` isn't installed.
+    """
+    d = ImageDraw.Draw(img)
+    pad = max(6, int(size * 0.09))          # quiet zone (required for reliable scans)
+    if panel:
+        d.rounded_rectangle([x - pad, y - pad, x + size + pad, y + size + pad],
+                            radius=int(pad * 1.2), fill=QR_LIGHT)
+
     try:
         import qrcode
-        q = qrcode.QRCode(border=1, box_size=1); q.add_data(data); q.make(fit=True)
+        q = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H,
+                          border=0, box_size=1)
+        q.add_data(data); q.make(fit=True)
         m = q.get_matrix()
+        scannable = True
     except Exception:
         m = [[(i * 7 + j * 13) % 3 == 0 for j in range(21)] for i in range(21)]
+        scannable = False
+
     n = len(m); c = size / n
+    r = max(0, int(c * 0.28))               # gently rounded modules, on-brand
     for i in range(n):
         for j in range(n):
-            if m[i][j]:
-                d.rectangle([x + j * c, y + i * c, x + (j + 1) * c, y + (i + 1) * c], fill=MUTE)
+            if not m[i][j]:
+                continue
+            x0, y0 = x + j * c, y + i * c
+            d.rounded_rectangle([x0, y0, x0 + c, y0 + c], radius=r, fill=QR_DARK)
+
+    # centre logo — only safe with H-level correction (hence the real-QR guard)
+    if logo and scannable and LOGO.exists():
+        try:
+            badge = int(size * 0.24)        # ~6% area; well within H's 30% budget
+            cx, cy = x + size / 2, y + size / 2
+            knock = int(badge * 0.64)       # clear the modules behind the mark
+            d.rounded_rectangle([cx - knock, cy - knock, cx + knock, cy + knock],
+                                radius=int(knock * 0.4), fill=QR_LIGHT)
+            lg = Image.open(LOGO).convert("RGBA")
+            h = int(lg.height * badge / lg.width)
+            lg = lg.resize((badge, h))
+            img.paste(lg, (int(cx - badge / 2), int(cy - h / 2)), lg)
+        except Exception:
+            pass
 
 
 # --------------------------------------------------------------------------- #

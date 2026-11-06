@@ -157,9 +157,14 @@ def render_streak(cfg, out):
     d = ImageDraw.Draw(img)
     ttext(d, M, 1812, "MADE LIKE A GUN · PURE MOTORCYCLING", fM(17), MUTE, tr=3)
     ttext(d, M, 1840, "ROYAL ENFIELD MOTOVERSE // DIGITAL DISPATCH", fMB(17), acc, tr=2)
-    qr(d, W - M - 80, 1802, 80, cfg.get("qr", "https://royalenfield.com/wingman"))
 
     img = vignette(grain(img.convert("RGB")))
+    # QR is drawn LAST — after grain/vignette — so noise and corner-darkening
+    # never touch it. It sits in the bottom-right corner (the most-vignetted
+    # area), so keeping it clean here is what makes it reliably scannable.
+    # ~128px is near the lower bound for a short URL; the planned redesign
+    # should budget >=140px and keep the encoded URL short.
+    qr(img, W - M - 136, 1778, 128, cfg.get("qr", "https://royalenfield.com/wingman"))
     img.save(out)
     return out
 
